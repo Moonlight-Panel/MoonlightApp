@@ -39,6 +39,9 @@ dependencies {
     implementation libs.material
     implementation libs.constraintlayout
     implementation libs.okhttp3.okhttp
+    implementation libs.jackson.databind
+    implementation libs.androidx.browser
+    implementation libs.jackson.datatype.jsr310
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.espresso.core
