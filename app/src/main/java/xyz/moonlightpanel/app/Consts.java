@@ -1,7 +1,5 @@
 package xyz.moonlightpanel.app;
 
-import android.app.Application;
-
 import org.mozilla.geckoview.BuildConfig;
 
 public class Consts {
