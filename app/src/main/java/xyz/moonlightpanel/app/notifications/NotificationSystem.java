@@ -188,16 +188,16 @@ public class NotificationSystem extends WebSocketListener {
                 Log.e("NTS", Objects.requireNonNull(x.getMessage()));
             }
 
-            //Intent intent = new Intent(context, Manifest.class);
-            //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            //PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
             NotificationCompat.Builder n = new NotificationCompat.Builder(context, chn)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle(notification.getTitle())
                     .setContentText(notification.getContent())
-                    //.setContentIntent(pendingIntent)
-                    //.setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
             var nm = NotificationManagerCompat.from(context);
