@@ -11,6 +11,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.Locale;
+
 import xyz.moonlightpanel.app.MainActivity;
 import xyz.moonlightpanel.app.R;
 
@@ -37,6 +39,8 @@ public class NotificationService extends Service {
         startForeground(1, notification);
     }
     private Notification createNotification() {
+        var language = Locale.getDefault().getLanguage();
+        var description = language.contains("de") ? "Moonlight empfängt nun Benachrichtigungen" : "Moonlight now listens for notifications";
         var notificationChannelId = "Notification Service";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             var notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -55,6 +59,7 @@ public class NotificationService extends Service {
 
         return builder
                 .setContentTitle("Moonlight")
+                .setContentText(description)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
                 .build();
