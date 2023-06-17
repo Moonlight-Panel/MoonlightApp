@@ -7,10 +7,16 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -27,8 +33,11 @@ import org.mozilla.geckoview.WebResponse;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import xyz.moonlightpanel.app.notifications.NotificationService;
@@ -49,7 +58,11 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermission("android.permission.POST_NOTIFICATIONS", 200);
         checkPermission("android.permission.FOREGROUND_SERVICE", 200);
-
+        //checkPermission("android.permission.READ_MEDIA_VIDEO", 200);
+        //checkPermission("android.permission.READ_MEDIA_AUDIO", 200);
+        //checkPermission("android.permission.READ_MEDIA_IMAGES", 200);
+        checkPermission("android.permission.READ_EXTERNAL_STORAGE", 200);
+        checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", 200);
         GeckoView view = findViewById(R.id.firefox);
 
         var li = getIntent();
@@ -80,20 +93,20 @@ public class MainActivity extends AppCompatActivity {
             else {
                 session.loadUri(Consts.APP_URL);
             }
-            session.setPromptDelegate(new GeckoSession.PromptDelegate() {
-                @Nullable
-                @Override
-                public GeckoResult<PromptResponse> onAlertPrompt(@NonNull GeckoSession session, @NonNull AlertPrompt prompt) {
-                    if(prompt.message.startsWith("COOKIES")) {
-                        mlCookie = prompt.message.replace("COOKIES", "");
-                        Log.i("NTS", "Alert: " + mlCookie);
-                        if(mlCookie.contains("token="))
-                            needCookie = false;
-                        return null;
-                    }
-                    return GeckoSession.PromptDelegate.super.onAlertPrompt(session, prompt);
-                }
-            });
+            session.setPromptDelegate(new MoonlightPrompt());
+            sRuntime.setActivityDelegate(
+                    pendingIntent -> {
+                        final GeckoResult<Intent> result = new GeckoResult<>();
+                        try {
+                            final int code = mNextActivityResultCode++;
+                            mPendingActivityResult.put(code, result);
+                            MainActivity.this.startIntentSenderForResult(
+                                    pendingIntent.getIntentSender(), code, null, 0, 0, 0);
+                        } catch (IntentSender.SendIntentException e) {
+                            result.completeExceptionally(e);
+                        }
+                        return result;
+                    });
             session.setNavigationDelegate(new GeckoSession.NavigationDelegate() {
                 @Override
                 public void onLocationChange(@NonNull GeckoSession session, @Nullable String url, @NonNull List<GeckoSession.PermissionDelegate.ContentPermission> perms) {
@@ -138,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         startForegroundService(intent);
     }
 
+    private int mNextActivityResultCode = 10;
     public void checkPermission(String permission, int requestCode)
     {
         // Checking if permission is not granted
@@ -145,6 +159,28 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission }, requestCode);
         }
     }
+
+    private static final int REQUEST_FILE_PICKER = 1;
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (requestCode == REQUEST_FILE_PICKER) {
+            final MoonlightPrompt prompt =
+                    (MoonlightPrompt) session.getPromptDelegate();
+            prompt.onFileCallbackResult(resultCode, data);
+        } else if (mPendingActivityResult.containsKey(requestCode)) {
+            final GeckoResult<Intent> result = mPendingActivityResult.remove(requestCode);
+
+            if (resultCode == Activity.RESULT_OK) {
+                result.complete(data);
+            } else {
+                result.completeExceptionally(new RuntimeException("Unknown error"));
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private HashMap<Integer, GeckoResult<Intent>> mPendingActivityResult = new HashMap<>();
 
     @Override
     public void onBackPressed() {
