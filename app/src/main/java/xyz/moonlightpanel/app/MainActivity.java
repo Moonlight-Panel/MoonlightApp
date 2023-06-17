@@ -10,12 +10,14 @@ import androidx.core.content.ContextCompat;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.webkit.WebView;
@@ -31,14 +33,23 @@ import org.mozilla.geckoview.WebExtension;
 import org.mozilla.geckoview.WebRequest;
 import org.mozilla.geckoview.WebResponse;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import xyz.moonlightpanel.app.notifications.NotificationService;
 
@@ -58,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermission("android.permission.POST_NOTIFICATIONS", 200);
         checkPermission("android.permission.FOREGROUND_SERVICE", 200);
-        //checkPermission("android.permission.READ_MEDIA_VIDEO", 200);
-        //checkPermission("android.permission.READ_MEDIA_AUDIO", 200);
-        //checkPermission("android.permission.READ_MEDIA_IMAGES", 200);
+        checkPermission("android.permission.READ_MEDIA_VIDEO", 200);
+        checkPermission("android.permission.READ_MEDIA_AUDIO", 200);
+        checkPermission("android.permission.READ_MEDIA_IMAGES", 200);
         checkPermission("android.permission.READ_EXTERNAL_STORAGE", 200);
         checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", 200);
         GeckoView view = findViewById(R.id.firefox);
@@ -125,6 +136,12 @@ public class MainActivity extends AppCompatActivity {
                     return GeckoSession.NavigationDelegate.super.onNewSession(session, uri);
                 }
             });
+            session.setContentDelegate(new GeckoSession.ContentDelegate() {
+                @Override
+                public void onExternalResponse(@NonNull GeckoSession session, @NonNull WebResponse response) {
+                    downloadFile(response);
+                }
+            });
         }
 
         if(li.hasExtra("url")) {
@@ -182,8 +199,96 @@ public class MainActivity extends AppCompatActivity {
 
     private HashMap<Integer, GeckoResult<Intent>> mPendingActivityResult = new HashMap<>();
 
+    private static final int REQUEST_WRITE_EXTERNAL_STORAGE = 3;
     @Override
     public void onBackPressed() {
         session.goBack();
+    }
+
+    private String getFileName(final WebResponse response) {
+        String filename;
+        String contentDispositionHeader;
+        if (response.headers.containsKey("content-disposition")) {
+            contentDispositionHeader = response.headers.get("content-disposition");
+        } else {
+            contentDispositionHeader =
+                    response.headers.getOrDefault("Content-Disposition", "default filename=moonlight_download");
+        }
+        Pattern pattern = Pattern.compile("(filename=\"?)(.+)(\"?)");
+        Matcher matcher = pattern.matcher(contentDispositionHeader);
+        if (matcher.find()) {
+            filename = matcher.group(2).replaceAll("\\s", "%20");
+        } else {
+            filename = "moonlight_download";
+        }
+
+        return filename;
+    }
+
+    private LinkedList<WebResponse> mPendingDownloads = new LinkedList<>();
+    private void downloadFile(final WebResponse response) {
+
+        if (response.body == null) {
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(
+                MainActivity.this, "android.permission.WRITE_EXTERNAL_STORAGE")
+                != PackageManager.PERMISSION_GRANTED) {
+            mPendingDownloads.add(response);
+            ActivityCompat.requestPermissions(
+                    MainActivity.this,
+                    new String[] {"android.permission.WRITE_EXTERNAL_STORAGE"},
+                    REQUEST_WRITE_EXTERNAL_STORAGE);
+            //return;
+        }
+
+        String filename = getFileName(response);
+
+        filename = filename.replaceAll("\"", "");
+
+        try {
+            String downloadsPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                            .getAbsolutePath()
+                            + "/"
+                            + filename;
+
+            Log.i("LOGTAG", "Downloading to: " + downloadsPath);
+            int bufferSize = 1024; // to read in 1Mb increments
+            byte[] buffer = new byte[bufferSize];
+            try (OutputStream out = new BufferedOutputStream(getFileStream(filename))) {
+                int len;
+                while ((len = response.body.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                session.loadUri("javascript:window.moonlight.toasts.info(\"Download completed: Saved as " + downloadsPath + "\")");
+            } catch (Throwable e) {
+                Log.i("LOGTAG", String.valueOf(e.toString()));
+            }
+        } catch (Throwable e) {
+            Log.i("LOGTAG", String.valueOf(e.toString()));
+        }
+    }
+
+    private OutputStream getFileStream(String fileName) throws FileNotFoundException {
+        OutputStream fos;
+        var context = getBaseContext();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+            ContentValues values = new ContentValues();
+
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);       //file name
+            //values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");        //file extension, will automatically add to file
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);     //end "/" is not mandatory
+
+            Uri uri = context.getContentResolver().insert(MediaStore.Files.getContentUri("external"), values);      //important!
+
+            fos = context.getContentResolver().openOutputStream(uri);
+        } else {
+            String docsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
+            File file = new File(docsDir, fileName);
+            fos = new FileOutputStream(file);
+        }
+        return fos;
     }
 }
