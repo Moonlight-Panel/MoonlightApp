@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import xyz.moonlightpanel.app.notifications.NotificationService;
 
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         GeckoView view = findViewById(R.id.firefox);
 
+        var li = getIntent();
         if (sRuntime == null) {
             session = new GeckoSession();
 
@@ -61,7 +63,23 @@ public class MainActivity extends AppCompatActivity {
 
             session.getSettings().setUserAgentOverride(Consts.USER_AGENT);
             session.open(sRuntime);
-            session.loadUri(Consts.APP_URL);
+            if(li.hasExtra("url")) {
+                var fullUrl = Consts.APP_URL + li.getStringExtra("url");
+                session.loadUri(fullUrl);
+
+                li.removeExtra("url");
+            }
+            else if(li.getCategories().contains("android.intent.category.BROWSABLE")){
+                var url = Objects.requireNonNull(li.getData()).toString();
+                Log.i("LIA", "Opening Moonlight Url: " + url);
+
+
+                session.loadUri(url);
+                li.removeCategory("android.intent.category.BROWSABLE");
+            }
+            else {
+                session.loadUri(Consts.APP_URL);
+            }
             session.setPromptDelegate(new GeckoSession.PromptDelegate() {
                 @Nullable
                 @Override
@@ -96,12 +114,22 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        var li = getIntent();
-        if(li.hasExtra("url")){
+        if(li.hasExtra("url")) {
             var fullUrl = Consts.APP_URL + li.getStringExtra("url");
             session.loadUri(fullUrl);
 
             li.removeExtra("url");
+        }
+        else if(li.getCategories().contains("android.intent.category.BROWSABLE")){
+            var url = Objects.requireNonNull(li.getData()).toString();
+            Log.i("LIA", "Opening Moonlight Url: " + url);
+
+
+            session.loadUri(url);
+            li.removeCategory("android.intent.category.BROWSABLE");
+            li.removeCategory("android.intent.category.DEFAULT");
+            li.addCategory("android.intent.category.LAUNCHER");
+            li.setAction("android.intent.action.MAIN");
         }
 
         view.setSession(session);

@@ -19,7 +19,7 @@ public class NotificationService extends Service {
     private NotificationSystem notificationSystem;
     public NotificationService(){
         INSTANCE = this;
-        notificationSystem = new NotificationSystem(MainActivity.INSTANCE.getBaseContext());
+        notificationSystem = new NotificationSystem(getBaseContext());
         Log.d("NTS", "Starting Notification Servcie");
     }
     public static NotificationService INSTANCE;
@@ -72,7 +72,7 @@ public class NotificationService extends Service {
     private Thread runService(){
         return new Thread(() -> {
             Log.d("NTS", "Thread running");
-            notificationSystem.run();
+                notificationSystem.run();
         });
     }
 }

@@ -11,6 +11,7 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -168,6 +169,18 @@ public class NotificationSystem extends WebSocketListener {
         } catch (Exception ignored) {
 
         }
+    }
+
+    @Override
+    public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
+        super.onFailure(webSocket, t, response);
+        run();
+    }
+
+    @Override
+    public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
+        super.onClosed(webSocket, code, reason);
+        run();
     }
 
     private void sendNotification(WebSocket webSocket, String json) {
