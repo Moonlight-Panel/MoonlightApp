@@ -263,10 +263,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 session.loadUri("javascript:window.moonlight.toasts.info(\"Download completed: Saved as " + downloadsPath + "\")");
             } catch (Throwable e) {
-                Log.i("LOGTAG", String.valueOf(e.toString()));
+                Log.i("LOGTAG", e.toString());
             }
         } catch (Throwable e) {
-            Log.i("LOGTAG", String.valueOf(e.toString()));
+            Log.i("LOGTAG", e.toString());
         }
     }
 
