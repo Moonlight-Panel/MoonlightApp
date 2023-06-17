@@ -39,20 +39,18 @@ import xyz.moonlightpanel.app.api.models.NotificationModelConverter;
 import xyz.moonlightpanel.app.api.models.StatusModelConverter;
 
 public class NotificationSystem extends WebSocketListener {
-    private Context context;
     private String currentToken;
     private boolean isInLogin = false;
     private boolean failureRestart = false;
     private NotificationApi api;
 
     public NotificationSystem(Context context) {
-        this.context = context;
         api = new NotificationApi();
     }
 
     public void setup() {
         try {
-            var dir = new File(context.getCacheDir().getPath() + "notifications");
+            var dir = new File(MainActivity.INSTANCE.getBaseContext().getCacheDir().getPath() + "notifications");
             dir.mkdir();
 
             var tokenFile = new File(dir.getPath() + "token.bin");
@@ -78,8 +76,7 @@ public class NotificationSystem extends WebSocketListener {
 
     public String renewToken() {
         try {
-
-            var dir = new File(context.getCacheDir().getPath() + "notifications");
+            var dir = new File(MainActivity.INSTANCE.getBaseContext().getCacheDir().getPath() + "notifications");
             var tokenFile = new File(dir.getPath() + "token.bin");
 
             Log.i("NTS", "Renewing token");
@@ -96,17 +93,23 @@ public class NotificationSystem extends WebSocketListener {
             writer.close();
 
             return token;
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.e("NTS", e.toString());
             return null;
         }
     }
 
     public void resetToken(){
-        var dir = new File(context.getCacheDir().getPath() + "notifications");
-        var tokenFile = new File(dir.getPath() + "token.bin");
+        try {
+            var dir = new File(MainActivity.INSTANCE.getBaseContext().getCacheDir().getPath() + "notifications");
+            var tokenFile = new File(dir.getPath() + "token.bin");
 
-        if (tokenFile.exists())
-            tokenFile.delete();
+            if (tokenFile.exists())
+                tokenFile.delete();
+        }
+        catch (Exception e){
+            Log.e("NTSR", e.toString());
+        }
     }
 
     public void run() {
@@ -150,15 +153,14 @@ public class NotificationSystem extends WebSocketListener {
             if (isInLogin) {
                 var status = StatusModelConverter.fromJsonString(text).getStatus();
                 if (!status) {
-                    renewToken();
-                    failureRestart = true;
+                    resetToken();
                     Log.d("NTS", "Login failed");
-                    webSocket.close(0, "Login failed");
+                    run();
                 }
                 else {
                     Log.d("NTS", "Logged in");
+                    isInLogin = false;
                 }
-                isInLogin = false;
             } else {
                 var action = ActionModelConverter.fromJsonString(text).getAction();
 
@@ -194,19 +196,19 @@ public class NotificationSystem extends WebSocketListener {
                 channel.setDescription(notification.getChannel());
                 // Register the channel with the system; you can't change the importance
                 // or other notification behaviors after this
-                NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+                NotificationManager notificationManager = MainActivity.INSTANCE.getBaseContext().getSystemService(NotificationManager.class);
                 notificationManager.createNotificationChannel(channel);
             }
             catch (Exception x){
                 Log.e("NTS", Objects.requireNonNull(x.getMessage()));
             }
 
-            Intent intent = new Intent(context, MainActivity.class);
+            Intent intent = new Intent(MainActivity.INSTANCE.getBaseContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             intent.putExtra("url", notification.getUrl());
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.INSTANCE.getBaseContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-            NotificationCompat.Builder n = new NotificationCompat.Builder(context, chn)
+            NotificationCompat.Builder n = new NotificationCompat.Builder(MainActivity.INSTANCE.getBaseContext(), chn)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle(notification.getTitle())
                     .setContentText(notification.getContent())
@@ -214,9 +216,9 @@ public class NotificationSystem extends WebSocketListener {
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH);
 
-            var nm = NotificationManagerCompat.from(context);
+            var nm = NotificationManagerCompat.from(MainActivity.INSTANCE.getBaseContext());
 
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(MainActivity.INSTANCE.getBaseContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 var rand = new Random();
                 Log.i("NTS", "Sending...");
                 nm.notify(rand.nextInt(), n.build());

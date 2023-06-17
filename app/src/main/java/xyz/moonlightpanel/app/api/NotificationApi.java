@@ -20,7 +20,7 @@ public class NotificationApi {
     }
 
     public String getMoonlightCookie(){
-        if(!(Objects.equals(cookie, "")))
+        if(cookie.contains("token="))
             return cookie;
 
         while (!MainActivity.mlCookie.contains("token="))
