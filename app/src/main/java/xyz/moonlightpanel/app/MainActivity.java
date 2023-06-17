@@ -150,16 +150,18 @@ public class MainActivity extends AppCompatActivity {
 
             li.removeExtra("url");
         }
-        else if(li.getCategories().contains("android.intent.category.BROWSABLE")){
-            var url = Objects.requireNonNull(li.getData()).toString();
-            Log.i("LIA", "Opening Moonlight Url: " + url);
+        else if(li.getCategories() != null) {
+            if (li.getCategories().contains("android.intent.category.BROWSABLE")) {
+                var url = Objects.requireNonNull(li.getData()).toString();
+                Log.i("LIA", "Opening Moonlight Url: " + url);
 
 
-            session.loadUri(url);
-            li.removeCategory("android.intent.category.BROWSABLE");
+                session.loadUri(url);
+                li.removeCategory("android.intent.category.BROWSABLE");/*
             li.removeCategory("android.intent.category.DEFAULT");
             li.addCategory("android.intent.category.LAUNCHER");
-            li.setAction("android.intent.action.MAIN");
+            li.setAction("android.intent.action.MAIN");*/
+            }
         }
 
         view.setSession(session);
