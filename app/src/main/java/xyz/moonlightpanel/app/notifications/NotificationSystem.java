@@ -198,7 +198,7 @@ public class NotificationSystem extends WebSocketListener {
                     .setContentText(notification.getContent())
                     .setContentIntent(pendingIntent)
                     .setAutoCancel(true)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                    .setPriority(NotificationCompat.PRIORITY_HIGH);
 
             var nm = NotificationManagerCompat.from(context);
 
