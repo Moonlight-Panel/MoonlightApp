@@ -7,7 +7,7 @@ public class Notification {
     private String channel;
     private String content;
     private String title;
-    private String url;
+    private String url = "";
 
     @JsonProperty("id")
     public Long getid() { return id; }
