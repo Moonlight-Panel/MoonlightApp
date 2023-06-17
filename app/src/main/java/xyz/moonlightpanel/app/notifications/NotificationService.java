@@ -55,7 +55,7 @@ public class NotificationService extends Service {
 
         return builder
                 .setContentTitle("Moonlight")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
                 .build();
     }
