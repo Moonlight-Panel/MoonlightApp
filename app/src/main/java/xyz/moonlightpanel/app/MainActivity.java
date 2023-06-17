@@ -96,6 +96,14 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        var li = getIntent();
+        if(li.hasExtra("url")){
+            var fullUrl = Consts.APP_URL + li.getStringExtra("url");
+            session.loadUri(fullUrl);
+
+            li.removeExtra("url");
+        }
+
         view.setSession(session);
 
         Intent intent = new Intent(this, NotificationService.class);

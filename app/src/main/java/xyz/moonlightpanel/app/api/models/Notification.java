@@ -7,6 +7,7 @@ public class Notification {
     private String channel;
     private String content;
     private String title;
+    private String url;
 
     @JsonProperty("id")
     public Long getid() { return id; }
@@ -27,4 +28,9 @@ public class Notification {
     public String getTitle() { return title; }
     @JsonProperty("title")
     public void setTitle(String value) { this.title = value; }
+
+    @JsonProperty("url")
+    public String getUrl() { return url; }
+    @JsonProperty("url")
+    public void setUrl(String value) { this.url = value; }
 }
