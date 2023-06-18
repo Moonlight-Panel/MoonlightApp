@@ -155,6 +155,7 @@ public class NotificationSystem extends WebSocketListener {
                 if (!status) {
                     resetToken();
                     Log.d("NTS", "Login failed");
+                    webSocket.close(1000, "Closing");
                     run();
                 }
                 else {
@@ -176,12 +177,20 @@ public class NotificationSystem extends WebSocketListener {
     @Override
     public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
         super.onFailure(webSocket, t, response);
+        try {
+            webSocket.close(1000, "Closing");
+        }
+        catch (Exception ignored){}
         run();
     }
 
     @Override
     public void onClosed(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
         super.onClosed(webSocket, code, reason);
+        try {
+            webSocket.close(1000, "Closing");
+        }
+        catch (Exception ignored){}
         run();
     }
 

@@ -30,6 +30,9 @@ public class MoonlightPrompt implements GeckoSession.PromptDelegate {
                 needCookie = false;
             return null;
         }
+        else if (prompt.message.startsWith("MLCMDreload")){
+            session.reload();
+        }
         return GeckoSession.PromptDelegate.super.onAlertPrompt(session, prompt);
     }
 

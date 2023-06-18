@@ -8,9 +8,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -166,8 +168,22 @@ public class MainActivity extends AppCompatActivity {
 
         view.setSession(session);
 
-        Intent intent = new Intent(this, NotificationService.class);
-        startForegroundService(intent);
+        session.loadUri("javascript:if(document.querySelector(\"#components-reconnect-modal\").className.includes(\"show\"))alert(\"MLCMDreload\")");
+
+        if(!isServiceRunning(this, NotificationService.class)) {
+            Intent intent = new Intent(this, NotificationService.class);
+            startForegroundService(intent);
+        }
+    }
+
+    public static boolean isServiceRunning(Context context, Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int mNextActivityResultCode = 10;
