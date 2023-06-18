@@ -4,5 +4,7 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="colorPrimaryDark">@color/navbar</item>
+        <item name="background">@color/navbar</item>
+        <item name="colorPrimary">@color/navbar</item>
     </style>
 </resources>

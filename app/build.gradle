@@ -10,8 +10,8 @@ android {
         applicationId "xyz.moonlightpanel.app"
         minSdk 26
         targetSdk 33
-        versionCode 1_01
-        versionName "1.0b"
+        versionCode 1_02
+        versionName "1.0c"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

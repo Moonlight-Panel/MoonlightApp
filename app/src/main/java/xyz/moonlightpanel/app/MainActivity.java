@@ -43,6 +43,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public static MainActivity INSTANCE;
     public static String mlCookie = "";
     public static boolean needCookie = true;
+    private static boolean isLaunchedByAppUrl = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        isLaunchedByAppUrl = false;
+
         if(li.hasExtra("url")) {
             var fullUrl = Consts.APP_URL + li.getStringExtra("url");
             session.loadUri(fullUrl);
@@ -157,18 +162,37 @@ public class MainActivity extends AppCompatActivity {
                 var url = Objects.requireNonNull(li.getData()).toString();
                 Log.i("LIA", "Opening Moonlight Url: " + url);
 
-
                 session.loadUri(url);
-                li.removeCategory("android.intent.category.BROWSABLE");/*
+                li.removeCategory("android.intent.category.BROWSABLE");
+                li.setData(null);/*
             li.removeCategory("android.intent.category.DEFAULT");
             li.addCategory("android.intent.category.LAUNCHER");
             li.setAction("android.intent.action.MAIN");*/
             }
         }
 
+        try {
+            if(li.getData() != null){
+                var mlHost = new URI(Consts.APP_URL).getHost();
+                if(Objects.equals(li.getData().getHost(), mlHost)){
+                    var url = Objects.requireNonNull(li.getData()).toString();
+                    Log.i("LIA", "Opening Moonlight Url: " + url);
+
+                    isLaunchedByAppUrl = true;
+                    session.loadUri(url);
+
+                    li.setData(null);
+                }
+            }
+
+
+        } catch (URISyntaxException ignored) {
+
+        }
+
         view.setSession(session);
 
-        session.loadUri("javascript:if(document.querySelector(\"#components-reconnect-modal\").className.includes(\"show\"))alert(\"MLCMDreload\")");
+        session.loadUri("javascript:if(document.querySelector(\"#components-reconnect-modal\").className.includes(\"show\")|document.querySelector(\"#components-reconnect-modal\").className.includes(\"rejected\")|document.querySelector(\"#components-reconnect-modal\").className.includes(\"failed\"))alert(\"MLCMDreload\")");
 
         if(!isServiceRunning(this, NotificationService.class)) {
             Intent intent = new Intent(this, NotificationService.class);
@@ -221,6 +245,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         session.goBack();
+        if (isLaunchedByAppUrl)
+            this.finish();
     }
 
     private String getFileName(final WebResponse response) {

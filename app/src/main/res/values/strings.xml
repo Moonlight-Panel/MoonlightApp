@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Moonlight</string>
+    <string name="repost_confirm_title">Bestätigen</string>
+    <string name="repost_confirm_message">Bestätigen</string>
+    <string name="repost_confirm_resend">Wiederholen</string>
+    <string name="repost_confirm_cancel">Abbrechen</string>
+    <string name="before_unload_title">Unload</string>
+    <string name="before_unload_message">Unload</string>
+    <string name="before_unload_leave_page">Seite verlassen</string>
+    <string name="before_unload_stay">Bleiben</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
 </resources>
