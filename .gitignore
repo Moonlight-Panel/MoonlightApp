@@ -33,3 +33,4 @@ google-services.json
 *.hprof
 app/release/app-release.aab
 app/release/assetlinks.json
+*.aab
