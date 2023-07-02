@@ -1,5 +1,5 @@
 [versions]
-agp = "8.2.0-alpha08"
+agp = "8.2.0-alpha10"
 browser = "1.5.0"
 jackson-databind = "2.12.3"
 jackson-datatype-jsr310 = "2.9.0"

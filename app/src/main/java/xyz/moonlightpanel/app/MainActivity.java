@@ -72,13 +72,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        checkPermission("android.permission.POST_NOTIFICATIONS", 200);
-        checkPermission("android.permission.FOREGROUND_SERVICE", 200);
-        checkPermission("android.permission.READ_MEDIA_VIDEO", 200);
-        checkPermission("android.permission.READ_MEDIA_AUDIO", 200);
-        checkPermission("android.permission.READ_MEDIA_IMAGES", 200);
-        checkPermission("android.permission.READ_EXTERNAL_STORAGE", 200);
-        checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", 200);
+        checkPermissions(i);
+
         GeckoView view = findViewById(R.id.firefox);
 
         var li = getIntent();
@@ -213,10 +208,41 @@ public class MainActivity extends AppCompatActivity {
     private int mNextActivityResultCode = 10;
     public void checkPermission(String permission, int requestCode)
     {
-        // Checking if permission is not granted
-        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission }, requestCode);
+        try {
+            // Checking if permission is not granted
+            if (ContextCompat.checkSelfPermission(MainActivity.this, permission) == PackageManager.PERMISSION_DENIED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+            }
         }
+        catch (Exception ignored){}
+    }
+
+    private void checkPermissions(int j) {
+        switch (j) {
+            case 0 -> checkPermission("android.permission.WRITE_EXTERNAL_STORAGE", 200);
+            case 1 -> checkPermission("android.permission.READ_EXTERNAL_STORAGE", 200);
+            //case 2 -> checkPermission("android.permission.READ_MEDIA_IMAGES", 200);
+            //case 5 -> checkPermission("android.permission.READ_MEDIA_AUDIO", 200);
+            //case 6 -> checkPermission("android.permission.READ_MEDIA_VIDEO", 200);
+            case 4 -> checkPermission("android.permission.FOREGROUND_SERVICE", 200);
+            case 3 -> checkPermission("android.permission.POST_NOTIFICATIONS", 200);
+        }
+    }
+    int i = 0;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        var k = switch (permissions[0]) {
+            case "android.permission.WRITE_EXTERNAL_STORAGE" -> 1;
+            case "android.permission.READ_EXTERNAL_STORAGE" -> 3;
+            case "android.permission.READ_MEDIA_IMAGES" -> 3;
+            case "android.permission.READ_MEDIA_AUDIO" -> 6;
+            case "android.permission.READ_MEDIA_VIDEO" -> 7;
+            case "android.permission.FOREGROUND_SERVICE" -> 5;
+            case "android.permission.POST_NOTIFICATIONS" -> 4;
+            default -> 11;
+        };
+        checkPermissions(k);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private static final int REQUEST_FILE_PICKER = 1;
