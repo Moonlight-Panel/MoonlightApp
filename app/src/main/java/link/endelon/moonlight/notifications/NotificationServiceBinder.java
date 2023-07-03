@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app.notifications;
+package link.endelon.moonlight.notifications;
 
 import android.os.Binder;
 

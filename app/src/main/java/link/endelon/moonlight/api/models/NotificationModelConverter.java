@@ -12,7 +12,7 @@
 //
 //     NotificationModel data = Converter.fromJsonString(jsonString);
 
-package xyz.moonlightpanel.app.api.models;
+package link.endelon.moonlight.api.models;
 
 import java.io.IOException;
 import com.fasterxml.jackson.databind.*;

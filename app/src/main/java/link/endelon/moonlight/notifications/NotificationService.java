@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app.notifications;
+package link.endelon.moonlight.notifications;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -13,8 +13,8 @@ import android.util.Log;
 
 import java.util.Locale;
 
-import xyz.moonlightpanel.app.MainActivity;
-import xyz.moonlightpanel.app.R;
+import link.endelon.moonlight.MainActivity;
+import link.endelon.moonlight.R;
 
 public class NotificationService extends Service {
     private Thread thread;

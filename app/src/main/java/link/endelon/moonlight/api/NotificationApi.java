@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app.api;
+package link.endelon.moonlight.api;
 
 import android.util.Log;
 
@@ -8,9 +8,8 @@ import java.util.Objects;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import xyz.moonlightpanel.app.Consts;
-import xyz.moonlightpanel.app.MainActivity;
-import xyz.moonlightpanel.app.api.models.TokenResponseModelConverter;
+import link.endelon.moonlight.*;
+import link.endelon.moonlight.api.models.TokenResponseModelConverter;
 
 public class NotificationApi {
     private OkHttpClient client;

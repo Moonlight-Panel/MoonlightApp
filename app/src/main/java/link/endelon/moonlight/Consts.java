@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app;
+package link.endelon.moonlight;
 
 import org.mozilla.geckoview.BuildConfig;
 

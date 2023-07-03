@@ -1,7 +1,7 @@
-package xyz.moonlightpanel.app;
+package link.endelon.moonlight;
 
-import static xyz.moonlightpanel.app.MainActivity.mlCookie;
-import static xyz.moonlightpanel.app.MainActivity.needCookie;
+import static link.endelon.moonlight.MainActivity.mlCookie;
+import static link.endelon.moonlight.MainActivity.needCookie;
 
 import android.app.Activity;
 import android.app.AlertDialog;

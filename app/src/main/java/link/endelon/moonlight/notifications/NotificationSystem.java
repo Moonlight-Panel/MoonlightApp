@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app.notifications;
+package link.endelon.moonlight.notifications;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -29,14 +29,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
-import xyz.moonlightpanel.app.Consts;
-import xyz.moonlightpanel.app.MainActivity;
-import xyz.moonlightpanel.app.R;
-import xyz.moonlightpanel.app.api.NotificationApi;
-import xyz.moonlightpanel.app.api.models.ActionModel;
-import xyz.moonlightpanel.app.api.models.ActionModelConverter;
-import xyz.moonlightpanel.app.api.models.NotificationModelConverter;
-import xyz.moonlightpanel.app.api.models.StatusModelConverter;
+import link.endelon.moonlight.*;
+import link.endelon.moonlight.api.NotificationApi;
+import link.endelon.moonlight.api.models.*;
 
 public class NotificationSystem extends WebSocketListener {
     private String currentToken;

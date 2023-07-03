@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'xyz.moonlightpanel.app'
+    namespace 'link.endelon.moonlight'
     compileSdk 33
 
     defaultConfig {
-        applicationId "xyz.moonlightpanel.app"
+        applicationId "link.endelon.moonlight"
         minSdk 26
         targetSdk 33
         versionCode 1_02

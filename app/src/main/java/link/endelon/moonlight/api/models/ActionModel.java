@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app.api.models;
+package link.endelon.moonlight.api.models;
 
 import com.fasterxml.jackson.annotation.*;
 

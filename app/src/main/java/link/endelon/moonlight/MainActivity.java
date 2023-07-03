@@ -1,4 +1,4 @@
-package xyz.moonlightpanel.app;
+package link.endelon.moonlight;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,7 +55,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import xyz.moonlightpanel.app.notifications.NotificationService;
+import link.endelon.moonlight.notifications.NotificationService;
 
 public class MainActivity extends AppCompatActivity {
     private static GeckoRuntime sRuntime;
@@ -68,42 +68,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         INSTANCE = this;
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         checkPermissions(i);
-
         GeckoView view = findViewById(R.id.firefox);
 
         var li = getIntent();
+
         if (sRuntime == null) {
             session = new GeckoSession();
 
-// Workaround for Bug 1758212
             session.setContentDelegate(new GeckoSession.ContentDelegate() {});
             // GeckoRuntime can only be initialized once per process
             sRuntime = GeckoRuntime.create(this);
 
             session.getSettings().setUserAgentOverride(Consts.USER_AGENT);
             session.open(sRuntime);
-            if(li.hasExtra("url")) {
-                var fullUrl = Consts.APP_URL + li.getStringExtra("url");
-                session.loadUri(fullUrl);
-
-                li.removeExtra("url");
-            }
-            else if(li.getCategories().contains("android.intent.category.BROWSABLE")){
-                var url = Objects.requireNonNull(li.getData()).toString();
-                Log.i("LIA", "Opening Moonlight Url: " + url);
-
-
-                session.loadUri(url);
-                li.removeCategory("android.intent.category.BROWSABLE");
-            }
-            else {
-                session.loadUri(Consts.APP_URL);
-            }
+            session.loadUri(Consts.APP_URL);
             session.setPromptDelegate(new MoonlightPrompt());
             sRuntime.setActivityDelegate(
                     pendingIntent -> {
@@ -144,9 +125,25 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
+        if(li.hasExtra("url") && !li.hasExtra("used")) {
+            var fullUrl = Consts.APP_URL + li.getStringExtra("url");
+            session.loadUri(fullUrl);
+        }
+        else if(li.getCategories() != null && !li.hasExtra("used")){
+            if(li.getCategories().contains("android.intent.category.BROWSABLE")){
+                var url = Objects.requireNonNull(li.getData()).toString();
+                Log.i("LIA", "Opening Moonlight Url: " + url);
+                session.loadUri(url);
+            }
+        }
+        else if(!li.hasExtra("used"))
+        {
+            session.loadUri(Consts.APP_URL);
+        }
+
         isLaunchedByAppUrl = false;
 
-        if(li.hasExtra("url")) {
+        /*if(li.hasExtra("url")) {
             var fullUrl = Consts.APP_URL + li.getStringExtra("url");
             session.loadUri(fullUrl);
 
@@ -162,12 +159,12 @@ public class MainActivity extends AppCompatActivity {
                 li.setData(null);/*
             li.removeCategory("android.intent.category.DEFAULT");
             li.addCategory("android.intent.category.LAUNCHER");
-            li.setAction("android.intent.action.MAIN");*/
+            li.setAction("android.intent.action.MAIN");*\/
             }
-        }
+        }*/
 
         try {
-            if(li.getData() != null){
+            if(li.getData() != null && !li.hasExtra("used")){
                 var mlHost = new URI(Consts.APP_URL).getHost();
                 if(Objects.equals(li.getData().getHost(), mlHost)){
                     var url = Objects.requireNonNull(li.getData()).toString();
@@ -175,8 +172,6 @@ public class MainActivity extends AppCompatActivity {
 
                     isLaunchedByAppUrl = true;
                     session.loadUri(url);
-
-                    li.setData(null);
                 }
             }
 
@@ -184,6 +179,9 @@ public class MainActivity extends AppCompatActivity {
         } catch (URISyntaxException ignored) {
 
         }
+
+        if(!li.hasExtra("used"))
+            li.putExtra("used", true);
 
         view.setSession(session);
 

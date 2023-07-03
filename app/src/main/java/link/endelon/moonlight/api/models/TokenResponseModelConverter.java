@@ -10,9 +10,9 @@
 //
 // Then you can deserialize a JSON string with
 //
-//     StatusModel data = Converter.fromJsonString(jsonString);
+//     TokenResponseModel data = Converter.fromJsonString(jsonString);
 
-package xyz.moonlightpanel.app.api.models;
+package link.endelon.moonlight.api.models;
 
 import java.io.IOException;
 import com.fasterxml.jackson.databind.*;
@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 
-public class StatusModelConverter {
+public class TokenResponseModelConverter {
     // Date-time helpers
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -42,7 +42,7 @@ public class StatusModelConverter {
             .withZone(ZoneOffset.UTC);
 
     public static OffsetDateTime parseDateTimeString(String str) {
-        return ZonedDateTime.from(StatusModelConverter.DATE_TIME_FORMATTER.parse(str)).toOffsetDateTime();
+        return ZonedDateTime.from(TokenResponseModelConverter.DATE_TIME_FORMATTER.parse(str)).toOffsetDateTime();
     }
 
     private static final DateTimeFormatter TIME_FORMATTER = new DateTimeFormatterBuilder()
@@ -55,15 +55,15 @@ public class StatusModelConverter {
             .withZone(ZoneOffset.UTC);
 
     public static OffsetTime parseTimeString(String str) {
-        return ZonedDateTime.from(StatusModelConverter.TIME_FORMATTER.parse(str)).toOffsetDateTime().toOffsetTime();
+        return ZonedDateTime.from(TokenResponseModelConverter.TIME_FORMATTER.parse(str)).toOffsetDateTime().toOffsetTime();
     }
     // Serialize/deserialize helpers
 
-    public static StatusModel fromJsonString(String json) throws IOException {
+    public static TokenResponseModel fromJsonString(String json) throws IOException {
         return getObjectReader().readValue(json);
     }
 
-    public static String toJsonString(StatusModel obj) throws JsonProcessingException {
+    public static String toJsonString(TokenResponseModel obj) throws JsonProcessingException {
         return getObjectWriter().writeValueAsString(obj);
     }
 
@@ -80,12 +80,12 @@ public class StatusModelConverter {
             @Override
             public OffsetDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
                 String value = jsonParser.getText();
-                return StatusModelConverter.parseDateTimeString(value);
+                return TokenResponseModelConverter.parseDateTimeString(value);
             }
         });
         mapper.registerModule(module);
-        reader = mapper.readerFor(StatusModel.class);
-        writer = mapper.writerFor(StatusModel.class);
+        reader = mapper.readerFor(TokenResponseModel.class);
+        writer = mapper.writerFor(TokenResponseModel.class);
     }
 
     private static ObjectReader getObjectReader() {
