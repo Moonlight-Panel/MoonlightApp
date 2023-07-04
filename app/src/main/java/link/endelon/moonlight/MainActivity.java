@@ -73,36 +73,45 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions(i);
         GeckoView view = findViewById(R.id.firefox);
 
+        checkPermission("android.permission.FOREGROUND_SERVICE", 200);
+
         var li = getIntent();
 
-        if (sRuntime == null) {
+        if(!li.hasExtra("used")) {
+            if(session != null){
+                session.close();
+            }
+
+            if(sRuntime == null){
+                sRuntime = GeckoRuntime.create(this);
+                sRuntime.setActivityDelegate(
+                        pendingIntent -> {
+                            final GeckoResult<Intent> result = new GeckoResult<>();
+                            try {
+                                final int code = mNextActivityResultCode++;
+                                mPendingActivityResult.put(code, result);
+                                MainActivity.this.startIntentSenderForResult(
+                                        pendingIntent.getIntentSender(), code, null, 0, 0, 0);
+                            } catch (IntentSender.SendIntentException e) {
+                                result.completeExceptionally(e);
+                            }
+                            return result;
+                        });
+            }
+
             session = new GeckoSession();
 
-            session.setContentDelegate(new GeckoSession.ContentDelegate() {});
-            // GeckoRuntime can only be initialized once per process
-            sRuntime = GeckoRuntime.create(this);
+            session.setContentDelegate(new GeckoSession.ContentDelegate() {
+            });
 
             session.getSettings().setUserAgentOverride(Consts.USER_AGENT);
             session.open(sRuntime);
             session.loadUri(Consts.APP_URL);
             session.setPromptDelegate(new MoonlightPrompt());
-            sRuntime.setActivityDelegate(
-                    pendingIntent -> {
-                        final GeckoResult<Intent> result = new GeckoResult<>();
-                        try {
-                            final int code = mNextActivityResultCode++;
-                            mPendingActivityResult.put(code, result);
-                            MainActivity.this.startIntentSenderForResult(
-                                    pendingIntent.getIntentSender(), code, null, 0, 0, 0);
-                        } catch (IntentSender.SendIntentException e) {
-                            result.completeExceptionally(e);
-                        }
-                        return result;
-                    });
             session.setNavigationDelegate(new GeckoSession.NavigationDelegate() {
                 @Override
                 public void onLocationChange(@NonNull GeckoSession session, @Nullable String url, @NonNull List<GeckoSession.PermissionDelegate.ContentPermission> perms) {
-                    if(needCookie)
+                    if (needCookie)
                         session.loadUri("javascript:alert('COOKIES' + document.cookie)");
                     GeckoSession.NavigationDelegate.super.onLocationChange(session, url, perms);
                 }
@@ -123,22 +132,19 @@ public class MainActivity extends AppCompatActivity {
                     downloadFile(response);
                 }
             });
-        }
 
-        if(li.hasExtra("url") && !li.hasExtra("used")) {
-            var fullUrl = Consts.APP_URL + li.getStringExtra("url");
-            session.loadUri(fullUrl);
-        }
-        else if(li.getCategories() != null && !li.hasExtra("used")){
-            if(li.getCategories().contains("android.intent.category.BROWSABLE")){
-                var url = Objects.requireNonNull(li.getData()).toString();
-                Log.i("LIA", "Opening Moonlight Url: " + url);
-                session.loadUri(url);
+            if (li.hasExtra("url")) {
+                var fullUrl = Consts.APP_URL + li.getStringExtra("url");
+                session.loadUri(fullUrl);
+            } else if (li.getCategories() != null) {
+                if (li.getCategories().contains("android.intent.category.BROWSABLE")) {
+                    var url = Objects.requireNonNull(li.getData()).toString();
+                    Log.i("LIA", "Opening Moonlight Url: " + url);
+                    session.loadUri(url);
+                }
+            } else {
+                session.loadUri(Consts.APP_URL);
             }
-        }
-        else if(!li.hasExtra("used"))
-        {
-            session.loadUri(Consts.APP_URL);
         }
 
         isLaunchedByAppUrl = false;
@@ -162,23 +168,6 @@ public class MainActivity extends AppCompatActivity {
             li.setAction("android.intent.action.MAIN");*\/
             }
         }*/
-
-        try {
-            if(li.getData() != null && !li.hasExtra("used")){
-                var mlHost = new URI(Consts.APP_URL).getHost();
-                if(Objects.equals(li.getData().getHost(), mlHost)){
-                    var url = Objects.requireNonNull(li.getData()).toString();
-                    Log.i("LIA", "Opening Moonlight Url: " + url);
-
-                    isLaunchedByAppUrl = true;
-                    session.loadUri(url);
-                }
-            }
-
-
-        } catch (URISyntaxException ignored) {
-
-        }
 
         if(!li.hasExtra("used"))
             li.putExtra("used", true);

@@ -49,7 +49,6 @@ public class NotificationService extends Service {
                     "Notification Service",
                     NotificationManager.IMPORTANCE_HIGH
             );
-
             notificationManager.createNotificationChannel(channel);
         }
 
@@ -59,7 +58,7 @@ public class NotificationService extends Service {
 
         return builder
                 .setContentTitle("Moonlight")
-                .setContentText(description)
+                .setContentText(description).setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
                 .build();

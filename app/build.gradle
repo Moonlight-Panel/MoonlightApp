@@ -10,8 +10,8 @@ android {
         applicationId "link.endelon.moonlight"
         minSdk 26
         targetSdk 33
-        versionCode 1_02
-        versionName "1.0c"
+        versionCode 1_03
+        versionName "1.0d"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
