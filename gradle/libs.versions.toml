@@ -1,6 +1,8 @@
 [versions]
-agp = "8.2.0-alpha10"
+agp = "8.2.0-alpha11"
 browser = "1.5.0"
+geckoview = "115.0.20230706202047"
+guava = "27.0.1-android"
 jackson-databind = "2.12.3"
 jackson-datatype-jsr310 = "2.9.0"
 junit = "4.13.2"
@@ -12,9 +14,13 @@ constraintlayout = "2.1.4"
 okhttp = "20120626"
 squareup-okhttp = "5.0.0-alpha.11"
 autobahn-android = "21.7.1"
+work-runtime = "2.8.1"
 
 [libraries]
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "work-runtime" }
+geckoview = { module = "org.mozilla.geckoview:geckoview", version.ref = "geckoview" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-databind" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson-datatype-jsr310" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

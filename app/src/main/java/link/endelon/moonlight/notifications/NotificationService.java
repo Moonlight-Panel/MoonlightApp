@@ -7,13 +7,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
-
 import java.util.Locale;
-
-import link.endelon.moonlight.MainActivity;
 import link.endelon.moonlight.R;
 
 public class NotificationService extends Service {
@@ -29,6 +26,8 @@ public class NotificationService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         thread = runService();
         thread.start();
+
+        ((NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE)).cancelAll();
         return Service.START_STICKY;
     }
 
@@ -36,36 +35,34 @@ public class NotificationService extends Service {
     public void onCreate() {
         super.onCreate();
         var notification = createNotification();
-        startForeground(1, notification);
+        startForeground(1337, notification);
     }
     private Notification createNotification() {
         var language = Locale.getDefault().getLanguage();
-        var description = language.contains("de") ? "Moonlight empfängt nun Benachrichtigungen" : "Moonlight now listens for notifications";
+        var description = language.contains("de") ? "Moonlight empfängt nun Benachrichtigungen, klicke hier zum deaktivieren dieser Benachrichtigung" : "Moonlight now listens for notifications, click here to disable this notification";
         var notificationChannelId = "Notification Service";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            var channel = new NotificationChannel(
-                    notificationChannelId,
-                    "Notification Service",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            notificationManager.createNotificationChannel(channel);
-        }
+        var notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        var channel = new NotificationChannel(
+                notificationChannelId,
+                "Notification Service",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        notificationManager.createNotificationChannel(channel);
 
         var builder = new Notification.Builder(
                 this,
                 notificationChannelId);
-
+        Intent intent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, getBaseContext().getPackageName())
+                .putExtra(Settings.EXTRA_CHANNEL_ID, "Notification Service");
         return builder
                 .setContentTitle("Moonlight")
-                .setContentText(description).setDefaults(Notification.DEFAULT_ALL)
+                .setContentText(description)
+                .setContentIntent(PendingIntent.getActivity(getBaseContext(), 0, intent, PendingIntent.FLAG_MUTABLE))
+                .setDefaults(Notification.DEFAULT_ALL)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
                 .build();
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
     }
 
     @Override
@@ -76,7 +73,7 @@ public class NotificationService extends Service {
     private Thread runService(){
         return new Thread(() -> {
             Log.d("NTS", "Thread running");
-                notificationSystem.run();
+            notificationSystem.run();
         });
     }
 }

@@ -9,8 +9,6 @@ import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.content.ActivityNotFoundException;
-import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -22,35 +20,21 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
-import org.mozilla.geckoview.AllowOrDeny;
 import org.mozilla.geckoview.GeckoResult;
 import org.mozilla.geckoview.GeckoRuntime;
 import org.mozilla.geckoview.GeckoSession;
 import org.mozilla.geckoview.GeckoView;
-import org.mozilla.geckoview.StorageController;
-import org.mozilla.geckoview.WebExtension;
-import org.mozilla.geckoview.WebRequest;
 import org.mozilla.geckoview.WebResponse;
 
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -68,7 +52,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         INSTANCE = this;
+        isLaunchedByAppUrl = false;
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         checkPermissions(i);
         GeckoView view = findViewById(R.id.firefox);
@@ -135,19 +122,19 @@ public class MainActivity extends AppCompatActivity {
 
             if (li.hasExtra("url")) {
                 var fullUrl = Consts.APP_URL + li.getStringExtra("url");
+                isLaunchedByAppUrl = true;
                 session.loadUri(fullUrl);
             } else if (li.getCategories() != null) {
                 if (li.getCategories().contains("android.intent.category.BROWSABLE")) {
                     var url = Objects.requireNonNull(li.getData()).toString();
                     Log.i("LIA", "Opening Moonlight Url: " + url);
+                    isLaunchedByAppUrl = true;
                     session.loadUri(url);
                 }
             } else {
                 session.loadUri(Consts.APP_URL);
             }
         }
-
-        isLaunchedByAppUrl = false;
 
         /*if(li.hasExtra("url")) {
             var fullUrl = Consts.APP_URL + li.getStringExtra("url");
@@ -177,8 +164,9 @@ public class MainActivity extends AppCompatActivity {
         session.loadUri("javascript:if(document.querySelector(\"#components-reconnect-modal\").className.includes(\"show\")|document.querySelector(\"#components-reconnect-modal\").className.includes(\"rejected\")|document.querySelector(\"#components-reconnect-modal\").className.includes(\"failed\"))alert(\"MLCMDreload\")");
 
         if(!isServiceRunning(this, NotificationService.class)) {
-            Intent intent = new Intent(this, NotificationService.class);
-            startForegroundService(intent);
+            //Intent intent = new Intent(this, NotificationService.class);
+            //startForegroundService(intent);
+            startService(new Intent(getApplicationContext(), NotificationService.class));
         }
     }
 
